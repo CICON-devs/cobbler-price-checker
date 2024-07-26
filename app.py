@@ -115,3 +115,18 @@ else:
 # Display recorded responses
 if st.checkbox("Show recorded responses"):
     st.write(pd.DataFrame(st.session_state['responses'], columns=['image', 'original_price', 'correct_price', 'repairable', 'reason']))
+
+# Function to convert DataFrame to CSV
+def convert_df_to_csv(df):
+    return df.to_csv(index=False).encode('utf-8')
+
+# Add a button to download responses as CSV
+if st.button("Download responses as CSV"):
+    df = pd.DataFrame(st.session_state['responses'], columns=['image', 'original_price', 'correct_price', 'repairable', 'reason'])
+    csv = convert_df_to_csv(df)
+    st.download_button(
+        label="Download CSV",
+        data=csv,
+        file_name=file_name,
+        mime='text/csv',
+    )
