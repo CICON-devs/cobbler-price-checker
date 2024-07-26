@@ -83,17 +83,36 @@ st.markdown(f'<div style="text-align: center;"><p>Price: £{price}</p></div>', u
 
 # Ask the user if they agree with the price
 st.write("Fault: [insert fault here]")
-agree = st.radio("Do you agree with the price?", ("Yes", "No"))
 
 # Input for reason
 repairability = st.radio("Is this repairable?", ("Yes", "No"))
 if repairability == "Yes":
+    agree = st.radio("Do you agree with the price?", ("Yes", "No"))
     reason = st.text_input("Reason for yes/no for price:")
+    if agree:
+        if agree == "Yes":
+            if st.button("Submit"):
+                new_response = [data.iloc[image_index]['image'], price, price, repairability, reason]
+                if response_exists(*new_response):
+                    st.error("This response has already been recorded.")
+                else:
+                    st.session_state['responses'].append(new_response)
+                    save_responses(st.session_state['responses'])
+                    st.success("Response recorded.")
+        else:
+            new_price = st.number_input("Enter the correct price", min_value=0, value=price)
+            if st.button("Submit"):
+                new_response = [data.iloc[image_index]['image'], price, new_price, repairability, reason]
+                if response_exists(*new_response):
+                    st.error("This response has already been recorded.")
+                else:
+                    st.session_state['responses'].append(new_response)
+                    save_responses(st.session_state['responses'])
+                    st.success("Response recorded.")
 else:
     reason = st.text_input("Why is this not repairable?")
-
-if agree == "Yes":
     if st.button("Submit"):
+        price = ""
         new_response = [data.iloc[image_index]['image'], price, price, repairability, reason]
         if response_exists(*new_response):
             st.error("This response has already been recorded.")
@@ -101,16 +120,8 @@ if agree == "Yes":
             st.session_state['responses'].append(new_response)
             save_responses(st.session_state['responses'])
             st.success("Response recorded.")
-else:
-    new_price = st.number_input("Enter the correct price", min_value=0, value=price)
-    if st.button("Submit"):
-        new_response = [data.iloc[image_index]['image'], price, new_price, repairability, reason]
-        if response_exists(*new_response):
-            st.error("This response has already been recorded.")
-        else:
-            st.session_state['responses'].append(new_response)
-            save_responses(st.session_state['responses'])
-            st.success("Response recorded.")
+
+
 
 # Display recorded responses
 if st.checkbox("Show recorded responses"):
