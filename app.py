@@ -58,7 +58,7 @@ def response_exists(image, original_price, correct_price, repairability, reason)
     return False
 
 # Add "Previous" and "Next" buttons
-col1, col2 = st.columns([1,6])
+col1, col2 = st.columns([1,1])
 with col1:
     if st.button("Previous"):
         prev_image()
