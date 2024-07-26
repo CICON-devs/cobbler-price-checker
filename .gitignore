@@ -1,1 +1,4 @@
 starting_venv.py
+.DS_Store
+responses_*.csv
+

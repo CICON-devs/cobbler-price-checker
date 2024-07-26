@@ -48,8 +48,14 @@ file_name = f"responses_{todays_date}.csv"
 
 # Function to save responses
 def save_responses(responses):
-    df = pd.DataFrame(responses, columns=['image', 'original_price', 'correct_price'])
+    df = pd.DataFrame(responses, columns=['image', 'original_price', 'correct_price', 'repairable', 'reason'])
     df.to_csv(file_name, index=False)
+
+def response_exists(image, original_price, correct_price, repairability, reason):
+    for response in st.session_state['responses']:
+        if response == [image, original_price, correct_price, reason]:
+            return True
+    return False
 
 # Add "Previous" and "Next" buttons
 col1, col2 = st.columns([1,6])
@@ -68,25 +74,44 @@ price = data.iloc[image_index]['price']
 
 # Display the image and price
 image_base64 = get_image_base64(image_path)
+st.markdown(f'<div style="text-align: center;"><p>For the sake of example, right now the images are identical:</p></div>', unsafe_allow_html=True)
 st.markdown(f'<div style="text-align: center;"><img src="data:image/png;base64,{image_base64}" width="300"/></div>', unsafe_allow_html=True)
+st.markdown(f'<div style="text-align: center;"><p>Image 1</p></div>', unsafe_allow_html=True)
+st.markdown(f'<div style="text-align: center;"><img src="data:image/png;base64,{image_base64}" width="300"/></div>', unsafe_allow_html=True)
+st.markdown(f'<div style="text-align: center;"><p>Image 2</p></div>', unsafe_allow_html=True)
 st.markdown(f'<div style="text-align: center;"><p>Price: £{price}</p></div>', unsafe_allow_html=True)
 
 # Ask the user if they agree with the price
 st.write("Fault: [insert fault here]")
 agree = st.radio("Do you agree with the price?", ("Yes", "No"))
 
+# Input for reason
+repairability = st.radio("Is this repairable?", ("Yes", "No"))
+if repairability == "Yes":
+    reason = st.text_input("Reason for yes/no for price:")
+else:
+    reason = st.text_input("Why is this not repairable?")
+
 if agree == "Yes":
     if st.button("Submit"):
-        st.session_state['responses'].append([data.iloc[image_index]['image'], price, price])
-        save_responses(st.session_state['responses'])
-        st.success("Response recorded.")
+        new_response = [data.iloc[image_index]['image'], price, price, repairability, reason]
+        if response_exists(*new_response):
+            st.error("This response has already been recorded.")
+        else:
+            st.session_state['responses'].append(new_response)
+            save_responses(st.session_state['responses'])
+            st.success("Response recorded.")
 else:
     new_price = st.number_input("Enter the correct price", min_value=0, value=price)
     if st.button("Submit"):
-        st.session_state['responses'].append([data.iloc[image_index]['image'], price, new_price])
-        save_responses(st.session_state['responses'])
-        st.success("Response recorded.")
+        new_response = [data.iloc[image_index]['image'], price, new_price, repairability, reason]
+        if response_exists(*new_response):
+            st.error("This response has already been recorded.")
+        else:
+            st.session_state['responses'].append(new_response)
+            save_responses(st.session_state['responses'])
+            st.success("Response recorded.")
 
 # Display recorded responses
 if st.checkbox("Show recorded responses"):
-    st.write(pd.DataFrame(st.session_state['responses'], columns=['image', 'original_price', 'correct_price']))
+    st.write(pd.DataFrame(st.session_state['responses'], columns=['image', 'original_price', 'correct_price', 'repairable', 'reason']))
